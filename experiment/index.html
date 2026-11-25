@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>k-Steiner Experiment</title>
+  <style>
+    :root {
+      --bg: #f6f5f1; --panel: #ffffff; --text: #1c1c1e; --muted: #5f5f66;
+      --line: #dcdbd5; --accent: #2457c5; --good: #1f7a3d;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #131315; --panel: #1c1c20; --text: #ececef; --muted: #a3a3ad;
+        --line: #34343b; --accent: #6ea4ff; --good: #5cc983;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #131315; --panel: #1c1c20; --text: #ececef; --muted: #a3a3ad;
+      --line: #34343b; --accent: #6ea4ff; --good: #5cc983;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 860px; margin: 0 auto; padding: 40px 16px 64px; }
+    h1 { font-size: 1.6rem; margin: 0 0 8px; }
+    .back { margin: 0 0 20px; font-size: 0.95rem; }
+    a { color: var(--accent); }
+    p { margin: 0 0 1em; }
+    .muted { color: var(--muted); font-size: 0.92rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 20px 0; }
+    button { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--accent); cursor: pointer; }
+    #run { background: var(--accent); color: #fff; }
+    #download { background: transparent; color: var(--accent); }
+    button:disabled { opacity: 0.5; cursor: default; }
+    progress { width: 220px; height: 10px; }
+    #status { font-variant-numeric: tabular-nums; }
+    .table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+    th, td { padding: 7px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+    th { color: var(--muted); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    tr.newk td { border-top: 2px solid var(--line); }
+    td.saved { font-weight: 700; color: var(--good); }
+  </style>
+</head>
+<body>
+<main>
+  <p class="back"><a href="../index.html">← Back to the home page</a></p>
+  <h1>Experiment</h1>
+  <p>
+    This page runs the experiment of the report directly in your browser: 5,400 races on random terminals
+    (n = 4 to 12, k = 1 to 4, 300 races per row for k = 1 and 100 for k ≥ 2), with the same code as the race (<code>race/steiner.js</code>).
+    For each row, it measures the share of X candidates pruned by each method and the work saved by the new method.
+  </p>
+  <p class="muted">It takes less than a minute. The random terminals are always the same, so the results are always the same.</p>
+
+  <div class="actions">
+    <button id="run">Run the experiment</button>
+    <button id="download" disabled>Download the results (CSV)</button>
+    <progress id="bar" max="36" value="0"></progress>
+    <span id="status" class="muted">Not started</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>k</th><th>n</th><th>Races</th><th>X candidates</th>
+          <th>Pruned (old)</th><th>Pruned (new)</th><th>Work saved</th>
+          <th>Same tree</th><th>Wrong prunings</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <p class="muted" style="margin-top:12px">
+    X candidates = convex quadrilaterals that reach the pruning tests. Work saved = 1 − (work of the new method / work of the old method).
+    Wrong prunings = pruned candidates shorter than the best tree (only checked for k = 1, the exact case).
+  </p>
+</main>
+
+<script src="../race/steiner.js"></script>
+<script>
+// Same experiment as in the report, one row (k, n) at a time so that the page does not freeze
+const rnd = mulberry32(420); // same seed, so always the same terminals
+const plan = [];
+for (let k = 1; k <= 4; k++) for (let n = 4; n <= 12; n++) plan.push({ k, n, N: k === 1 ? 300 : 100 });
+const csv = ["k,n,instances,x_valid,x_pruned_old,x_pruned_new,work_old,work_new,trees_old,trees_new,same_tree,wrong_prunings"];
+
+const $ = (id) => document.getElementById(id);
+const pct = (a, b) => (100 * a / b).toFixed(1) + "%";
+
+function runRow({ k, n, N }) {
+  let xv = 0, po = 0, pn = 0, wo = 0, wn = 0, to = 0, tn = 0, same = 0, wrong = 0;
+  for (let t = 0; t < N; t++) {
+    const P = [];
+    while (P.length < n) { // random terminals, at least 0.12 apart
+      const p = { x: 0.08 + rnd() * 0.84, y: 0.08 + rnd() * 0.84 };
+      if (P.every((q) => dist(p, q) > 0.12)) P.push(p);
+    }
+    const R = buildRace(P, k);
+    for (const task of R.oldT) if (task.c && task.c.type === "X" && task.status !== "pre") { xv++; if (task.status === "rej") po++; }
+    for (const task of R.newT) if (task.c && task.c.type === "X" && task.status === "rej") pn++;
+    wo += R.oldT.at(-1).end; wn += R.newT.at(-1).end;
+    to += R.oldT.filter((x) => x.status === "eval").length; tn += R.newT.filter((x) => x.status === "eval").length;
+    if (Math.abs(R.bestOld - R.bestNew) < 1e-9) same++;
+    wrong += R.wrongNew.length + R.wrongOld.length;
+  }
+  csv.push([k, n, N, xv, po, pn, wo, wn, to, tn, same, wrong].join(","));
+  const tr = document.createElement("tr");
+  if (n === 4 && k > 1) tr.className = "newk";
+  tr.innerHTML = `<td>${k}</td><td>${n}</td><td>${N}</td><td>${xv}</td><td>${pct(po, xv)}</td><td>${pct(pn, xv)}</td>` +
+    `<td class="saved">${pct(wo - wn, wo)}</td><td>${same} / ${N}</td><td>${k === 1 ? wrong : "—"}</td>`;
+  $("rows").appendChild(tr);
+}
+
+function step(i) {
+  if (i === plan.length) {
+    $("status").textContent = "Done";
+    $("download").disabled = false;
+    return;
+  }
+  $("status").textContent = `Running k = ${plan[i].k}, n = ${plan[i].n}…`;
+  setTimeout(() => { // gives the browser time to draw the table between two rows
+    runRow(plan[i]);
+    $("bar").value = i + 1;
+    step(i + 1);
+  }, 0);
+}
+
+$("run").addEventListener("click", () => {
+  $("run").disabled = true;
+  step(0);
+});
+
+$("download").addEventListener("click", () => {
+  const blob = new Blob([csv.join("\n") + "\n"], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "results.csv";
+  a.click();
+});
+</script>
+</body>
+</html>
