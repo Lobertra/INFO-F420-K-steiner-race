@@ -8,17 +8,7 @@
 </head>
 <body>
   <header>
-    <p class="back"><a href="../index.html">← Back to the home page</a></p>
     <h1>The race between the two pruning methods</h1>
-    <p class="lead">
-      Both algorithms look for the shortest tree connecting the terminals with <strong>at most k Steiner points</strong>.
-      They examine the same topologies in the same order: every group of 3 vertices (<strong>degree-3</strong> Steiner point, Y)
-      and every group of 4 vertices (<strong>degree-4</strong> Steiner point, X, at the crossing point of the diagonals).
-      With k ≥ 2, they place one Steiner point per round, then adjust their positions.
-      The new method prunes more degree-4 Steiner points <em>without evaluating their tree</em>, thanks to the Trapezium Theorem.
-      With k = 1, both find the same Steiner point: the new one simply proves faster that it is optimal.
-      At the end, the best tree found is shown on each drawing.
-    </p>
   </header>
 
   <section class="controls">
@@ -33,7 +23,7 @@
         <option value="4">4</option>
       </select>
       <button id="random">New terminals</button>
-      <button id="square">Square (Fig. 1)</button>
+      <button id="square">Square </button>
     </div>
     <div class="group">
       <button id="play" class="primary">Play</button>
@@ -48,7 +38,6 @@
       <input type="range" id="speed" min="0" max="100" value="45">
       <span class="clock">Time: <strong id="clock">0</strong> units</span>
     </div>
-    <p class="hint">Tip: drag a terminal with the mouse to change the configuration.</p>
   </section>
 
   <main class="panels">
@@ -83,14 +72,7 @@
     <details>
       <summary>Cost model and simplifications</summary>
       <p>A geometric test (convexity, angle, Rhombus Test, Trapezium Test) costs 1 unit. Evaluating a tree, that is,
-        the minimum spanning tree of the terminals and the Steiner point, costs (n+1)² units (Prim's algorithm).
-        The new method sometimes does more tests, but evaluates fewer trees.</p>
-      <p>For k = 1, the search is exact. For k ≥ 2, the Steiner points are added one by one: every round adds the best Steiner point
-        (among the triples and quadruples of terminals and Steiner points already placed), then moves every Steiner point to its exact
-        position for its current neighbours (Theorem 2.4: at 2π/3 for degree 3, at the crossing point of the diagonals for degree 4).
-        The result is very good, but not always optimal.</p>
-      <p>This is a simplified version: in the paper, the pruning tests are applied while the branches are merged
-        (generation phase), not on a complete list of topologies.</p>
+        the minimum spanning tree of the terminals and the Steiner point, costs (n+1)² units (Prim's algorithm). </p>
     </details>
   </section>
 
