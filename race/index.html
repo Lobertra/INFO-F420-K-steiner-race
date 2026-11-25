@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>k-Steiner Race</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <p class="back"><a href="../index.html">← Back to the home page</a></p>
+    <h1>The race between the two pruning methods</h1>
+    <p class="lead">
+      Both algorithms look for the shortest tree connecting the terminals with <strong>at most k Steiner points</strong>.
+      They examine the same topologies in the same order: every group of 3 vertices (<strong>degree-3</strong> Steiner point, Y)
+      and every group of 4 vertices (<strong>degree-4</strong> Steiner point, X, at the crossing point of the diagonals).
+      With k ≥ 2, they place one Steiner point per round, then adjust their positions.
+      The new method prunes more degree-4 Steiner points <em>without evaluating their tree</em>, thanks to the Trapezium Theorem.
+      With k = 1, both find the same Steiner point: the new one simply proves faster that it is optimal.
+      At the end, the best tree found is shown on each drawing.
+    </p>
+  </header>
+
+  <section class="controls">
+    <div class="group">
+      <label for="n">Terminals: <span id="nLabel">8</span></label>
+      <input type="range" id="n" min="4" max="26" value="8">
+      <label for="k">Steiner points (k):</label>
+      <select id="k">
+        <option value="1" selected>1 (exact)</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+      <button id="random">New terminals</button>
+      <button id="square">Square (Fig. 1)</button>
+    </div>
+    <div class="group">
+      <button id="play" class="primary">Play</button>
+      <button id="reset">Restart</button>
+      <label for="stepSize">Step forward by</label>
+      <input type="number" id="stepSize" min="1" value="200">
+      <span>units</span>
+      <button id="step">Step</button>
+    </div>
+    <div class="group">
+      <label for="speed">Speed</label>
+      <input type="range" id="speed" min="0" max="100" value="45">
+      <span class="clock">Time: <strong id="clock">0</strong> units</span>
+    </div>
+    <p class="hint">Tip: drag a terminal with the mouse to change the configuration.</p>
+  </section>
+
+  <main class="panels">
+    <article class="panel" data-method="old">
+      <h2>Old method <small>(2024: Rhombus Test on one neighbour)</small></h2>
+      <canvas></canvas>
+      <div class="progress"><div class="bar"></div></div>
+      <dl class="stats"></dl>
+      <ul class="log"></ul>
+    </article>
+    <article class="panel" data-method="new">
+      <h2>New method <small>(2026: extended Rhombus Test + Trapezium Test)</small></h2>
+      <canvas></canvas>
+      <div class="progress"><div class="bar"></div></div>
+      <dl class="stats"></dl>
+      <ul class="log"></ul>
+    </article>
+  </main>
+
+  <section id="summary" class="summary" hidden></section>
+
+  <section class="legend">
+    <h2>Legend</h2>
+    <ul>
+      <li><span class="sw city"></span>Terminal</li>
+      <li><span class="sw best"></span>Best tree found so far and its Steiner points</li>
+      <li><span class="sw eval"></span>Topology whose tree is evaluated</li>
+      <li><span class="sw rej"></span>Degree-4 Steiner point pruned without evaluation</li>
+      <li><span class="sw zoneOld"></span>Rhombus region (old method)</li>
+      <li><span class="sw zoneNew"></span>Region T, Rhombus + Trapezium (new method)</li>
+    </ul>
+    <details>
+      <summary>Cost model and simplifications</summary>
+      <p>A geometric test (convexity, angle, Rhombus Test, Trapezium Test) costs 1 unit. Evaluating a tree, that is,
+        the minimum spanning tree of the terminals and the Steiner point, costs (n+1)² units (Prim's algorithm).
+        The new method sometimes does more tests, but evaluates fewer trees.</p>
+      <p>For k = 1, the search is exact. For k ≥ 2, the Steiner points are added one by one: every round adds the best Steiner point
+        (among the triples and quadruples of terminals and Steiner points already placed), then moves every Steiner point to its exact
+        position for its current neighbours (Theorem 2.4: at 2π/3 for degree 3, at the crossing point of the diagonals for degree 4).
+        The result is very good, but not always optimal.</p>
+      <p>This is a simplified version: in the paper, the pruning tests are applied while the branches are merged
+        (generation phase), not on a complete list of topologies.</p>
+    </details>
+  </section>
+
+  <footer>
+    Reference: J. Lee, M. Brazil, C. Ras, D. A. Thomas. An improved exact algorithm for the Euclidean k-Steiner tree problem.
+    <em>Computational Geometry: Theory and Applications</em>, 135:102268, 2026.
+  </footer>
+
+  <script src="steiner.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
