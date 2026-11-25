@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>k-Steiner Pruning Race</title>
+  <style>
+    :root {
+      --bg: #f6f5f1; --panel: #ffffff; --text: #1c1c1e; --muted: #5f5f66;
+      --line: #dcdbd5; --accent: #2457c5; --code: #efeee9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #131315; --panel: #1c1c20; --text: #ececef; --muted: #a3a3ad;
+        --line: #34343b; --accent: #6ea4ff; --code: #26262b;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #131315; --panel: #1c1c20; --text: #ececef; --muted: #a3a3ad;
+      --line: #34343b; --accent: #6ea4ff; --code: #26262b;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 720px; margin: 0 auto; padding: 48px 16px 64px; }
+    h1 { font-size: 1.8rem; line-height: 1.25; margin: 0 0 6px; }
+    h2 { font-size: 1.15rem; margin: 2em 0 0.5em; }
+    .sub { color: var(--muted); margin: 0 0 4px; }
+    .meta { color: var(--muted); font-size: 0.92rem; margin: 0 0 28px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .button { display: inline-block; padding: 11px 18px; border-radius: 8px; border: 1px solid var(--accent); font-weight: 600; text-decoration: none; }
+    .primary { background: var(--accent); color: #fff; }
+    .secondary { color: var(--accent); }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 20px 12px; margin-top: 28px; }
+    code { font-family: SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+    li { margin-bottom: 0.4em; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Pruning degree-4 Steiner points</h1>
+  <p class="sub">The old and the new method for the Euclidean k-Steiner tree problem</p>
+  <p class="meta">INFO-F420 – Computational geometry · Louis BERTRAND · 2026</p>
+
+  <p>
+    This project is based on the paper <em>An improved exact algorithm for the Euclidean k-Steiner tree problem</em>
+    by J. Lee, M. Brazil, C. Ras and D. A. Thomas (Computational Geometry: Theory and Applications, 2026).
+    The report compares the old pruning method (Rhombus Test) and the new one (Trapezium Test and extended Rhombus Test),
+    the race runs the two methods side by side, and the experiment measures the difference on 5,400 random instances.
+  </p>
+
+  <div class="actions">
+    <a class="button primary" href="report.pdf">Read the report (PDF)</a>
+    <a class="button secondary" href="race/index.html">Open the race</a>
+    <a class="button secondary" href="experiment/index.html">Run the experiment</a>
+  </div>
+
+  <div class="card">
+    <h2>How to run the programs</h2>
+    <ul>
+      <li><strong>The race</strong>: click “Open the race” above, or open <code>race/index.html</code> in a web browser.</li>
+      <li><strong>The experiment of the report</strong> (5,400 races): click “Run the experiment” above, or open <code>experiment/index.html</code>, then click “Run the experiment”. The results appear in a table and can be downloaded as a CSV file.</li>
+      <li>Nothing needs to be installed. If you open the files from the zip, keep the folder structure as it is, since the pages use relative paths.</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>
